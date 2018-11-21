@@ -20,7 +20,9 @@ create following views on provided postgresql database called 'news'
     ```sh
     CREATE VIEW top_articles AS SELECT title,count
     FROM (
-    SELECT top_articles_temp.slugname,top_articles_temp.count,articles.slug,articles.title FROM top_articles_temp,articles WHERE top_articles_temp.slugname = articles.slug) as resultset ORDER BY count DESC;
+        SELECT top_articles_temp.slugname,top_articles_temp.count,articles.slug,articles.title 
+        FROM top_articles_temp,articles 
+        WHERE top_articles_temp.slugname = articles.slug) as resultset ORDER BY count DESC;
 - View#3 - this view provides answer to question#2 and this will be used in log_analysis.py.
     ```sh
     CREATE VIEW popular_authors AS SELECT name,title,count
