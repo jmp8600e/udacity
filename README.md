@@ -7,6 +7,9 @@ This README.md explains prerequisites which are needed before running log_analys
   - On which days did more than 1% of requests lead to errors?
 
 ### Prerequisite
+- Download the sql database from [here](https://d17h27t6h515a5.cloudfront.net/topher/2016/August/57b5f748_newsdata/newsdata.zip), then unzip the newsdata.sql file, to load the database, cd into the directory and run below command 
+    ```sh
+    psql -d news -f newsdata.sql
 create following views on provided postgresql database called 'news'  
 
   - View#1 - creates temporary view called topthree_articles_temp. This extracts the slug name fro the URI for all '200 OK' status code and URI path contains /article*.
