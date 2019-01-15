@@ -1,0 +1,16 @@
+<div class="w3-main" style="margin-left:300px">
+    <div style="margin-left:50px;margin-top:210px" >
+      <h4 class="w3-text-grey"><b>{{name}} Items ( {{count}} items)</b></h4>
+  	{% for item in items %}
+		<a>
+			<div>
+				<!--<div class="col-md-1"></div>-->
+					<div class="w3-text-grey" style="font-weight:bold;padding:8px 16px;">
+                        {{item.title}}
+					</div>
+				<!--<div class="col-md-1"></div>-->
+			</div>
+		</a>
+	{% endfor %}
+    </div>  
+</div>
