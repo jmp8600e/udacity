@@ -337,6 +337,13 @@ def showCategoriesSelectedItems(name):
         print(currentUserName)
         return render_template('catalog.html', categories=categories, items=items, count=itemcount,name=name, currentUserName=currentUserName,showCategoryItem="true")   
 
+#http://localhost:8000/catalog/Snowboarding/Snowboard
+
+#@app.route('/catalog/<string:name>/<string:title>')     
+#def showItemDescription(name,title):
+    # now we have to seclect the description where which matches title from item and name from catagories
+
+
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
 def newCategory():
