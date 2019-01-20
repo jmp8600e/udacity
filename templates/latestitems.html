@@ -2,15 +2,21 @@
     <div style="margin-left:50px;margin-top:210px" >
       <h4 class="w3-text-grey"><b>Latest Items</b></h4>
   	{% for item in items %}
-		<a href = "{{url_for('showCategoriesLatestItems', item_id = item.id)}}">
+        <!-- below is needed to get right name of the category based on item -->
+        {% for category in categories %}
+            {% if category.id == item.category_id %} 
+                {% set name2 = category.name %}                       
+		<a href = "{{url_for('showItemDescription', name = name2, title = item.title)}}">
 			<div>
 				<!--<div class="col-md-1"></div>-->
 					<div class="w3-text-grey" style="font-weight:bold;padding:8px 16px;">
-                        {{item.title}} <i style="font-weight:normal;">({{categories[item.category_id].name}})</i>
+                        {{item.title}} <i style="font-weight:normal;"> ({{name2}})</i>
 					</div>
 				<!--<div class="col-md-1"></div>-->
 			</div>
 		</a>
+            {% endif %}
+        {% endfor %} 
 	{% endfor %}
     </div>  
 </div>

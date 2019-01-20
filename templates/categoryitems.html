@@ -2,8 +2,12 @@
     <div style="margin-left:50px;margin-top:210px" >
       <h4 class="w3-text-grey"><b>{{name}} Items ( {{count}} items)</b></h4>
   	{% for item in items %}
-		<a>
-			<div>
+        {% for category in categories %}
+            <!-- below is needed to get right name of the category based on item -->
+            {% if category.id == item.category_id %} 
+               {% set name2 = category.name %}     
+		<a href = "{{url_for('showItemDescription', name = name2, title = item.title)}}"> 
+            <div>
 				<!--<div class="col-md-1"></div>-->
 					<div class="w3-text-grey" style="font-weight:bold;padding:8px 16px;">
                         {{item.title}}
@@ -11,6 +15,9 @@
 				<!--<div class="col-md-1"></div>-->
 			</div>
 		</a>
+            {% endif %}
+        {% endfor %} 
 	{% endfor %}
     </div>  
 </div>
+

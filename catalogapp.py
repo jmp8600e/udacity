@@ -36,10 +36,21 @@ def getCategories():
     #items = session.query(Categories).all()
     items = session.query(Categories).order_by(asc(Categories.name))
     return items
+    
 # get a partucular category using name
 def getCategoryID(name):
     item = session.query(Categories).filter_by(name=name).one()
     return item.id
+    
+# get description of the item given name of catagory and title of the item    
+def getItemFromCategoryNameItemTitle(name,title):
+    item = (session.query(Items)
+        .filter(Items.category_id == Categories.id)
+        .filter(Items.title == title)
+        .filter(Categories.name == name)
+        .one())
+    return item
+    
 #check if category existing given name
 def existCategory(category_name):
     check = 0
@@ -339,11 +350,19 @@ def showCategoriesSelectedItems(name):
 
 #http://localhost:8000/catalog/Snowboarding/Snowboard
 
-#@app.route('/catalog/<string:name>/<string:title>')     
-#def showItemDescription(name,title):
+@app.route('/catalog/<string:name>/<string:title>')     
+def showItemDescription(name,title):
     # now we have to seclect the description where which matches title from item and name from catagories
-
-
+    categories = getCategories()
+    item = getItemFromCategoryNameItemTitle(name,title)
+    if 'username' not in login_session:  
+        #print("check1")
+        return render_template('catalog.html', categories=categories, item=item, currentUserName="none",showDescription="true")        
+    else:    
+        #print(restaurant.name + " - " + str(restaurant.user_id))
+        currentUserName = login_session['username']
+        print(currentUserName)
+        return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,showDescription="true")  
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
 def newCategory():
