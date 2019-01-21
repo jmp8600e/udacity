@@ -1,0 +1,34 @@
+<div class="w3-main" style="margin-left:300px">
+    <div style="margin-left:50px;margin-top:210px" >
+      <h4 class="w3-text-grey"><b>New User Form</b></h4>
+<form action="#" method = "post" autocomplete="on">
+  First name:
+  <br><input type="text" name="fname" required placeholder="Enter First Name"><br>
+  Last name:
+  <br><input type="text" name="lname" required placeholder="Enter Last Name"><br>
+  Email:
+  <br><input id="email" type="text" name="email" pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required placeholder="Enter you Email"><br>
+  Password:
+  <br><input type="password" name="pwd"  id="txtPassword" required placeholder="Password"><br>
+  Re-enter Password:
+  <br><input type="password" name="pwd"  id="confPassword" required placeholder="Enter Password Again"><br>
+<br>
+<input type="submit" id="btnSubmit" value="Submit">
+</form>
+<p>Note: You can also sign in using your Google and Facebook ID - click on Login button.</p>
+<p>Notice that autocomplete is "on" for the form, but "off" for the e-mail field.</p><script type="text/javascript" src="http://ajax.googleapis.com/ajax/libs/jquery/1.8.3/jquery.min.js"></script>
+<script type="text/javascript">
+    $(function () {
+        $("#btnSubmit").click(function () {
+            var password = $("#txtPassword").val();
+            var confirmPassword = $("#confPassword").val();
+            if (password != confirmPassword) {
+                alert("Passwords do not match.");
+                return false;
+            }
+            return true;
+        });
+    });
+</script>
+    </div>    
+</div>

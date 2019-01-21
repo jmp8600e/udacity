@@ -13,6 +13,7 @@ class User(Base):
     name = Column(String(250), nullable=False)
     email = Column(String(250), nullable=False)
     picture = Column(String(250))
+    password = Column(String(250))
 
 
 class Categories(Base):

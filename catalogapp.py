@@ -35,7 +35,14 @@ def createUser(login_session):
     session.commit()
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
-
+    
+def createLocalUser(email,fname,lname,password):
+    fullname = fname + " " + lname 
+    newUser = User(name=fullname, email=email, picture="", password=password)
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=email).one()
+    return user.name
 
 # User Helper Functions
 def getCategories():
@@ -379,6 +386,35 @@ def showItemDescription(name,title):
         currentUserName = login_session['username']
         print(currentUserName)
         return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,showDescription="true")  
+        
+@app.route('/userinfo',methods=['GET', 'POST'])
+def getUserInfo():
+    categories = getCategories()
+    items = getAllItems()
+    print(login_session)    
+    if request.method == 'POST':
+        if 'username' not in login_session:
+            user_id = getUserID(request.form['email'])
+            if not user_id:
+                newUser = createLocalUser(email=request.form['email'], fname=request.form['fname'], lname=request.form['lname'], password=request.form['pwd'])
+                flash('New User %s Successfully Created, click on Login to login as new user' % (newUser))
+                #return redirect(url_for('showCategoriesLatestItems'))   # doing double work so not using redirect...
+                return render_template('catalog.html', categories=categories, items=items, currentUserName="none",showLatest="true") 
+            else:
+                flash('Email  %s already exist, Please select different Email address' % (request.form['email']))
+                return render_template('catalog.html', categories=categories, items=items, currentUserName="none",newUser='true')
+        else:
+            currentUserName = login_session['username']
+            flash('User already logged in as   %s' % (currentUserName))
+            return render_template(url_for('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true"))
+    else:
+        if 'username' not in login_session: 
+            return render_template('catalog.html', categories=categories, items=items, currentUserName="none",newUser='true')        
+        else:    
+            currentUserName = login_session['username']
+            flash('User already logged in as   %s' % (currentUserName)) 
+            return render_template(url_for('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true"))
+
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
 def newCategory():
