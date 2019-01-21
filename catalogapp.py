@@ -29,9 +29,15 @@ Base.metadata.bind = engine
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
 
+def createUser(login_session):
+    newUser = User(name=login_session['username'], email=login_session['email'], picture=login_session['picture'])
+    session.add(newUser)
+    session.commit()
+    user = session.query(User).filter_by(email=login_session['email']).one()
+    return user.id
+
+
 # User Helper Functions
-
-
 def getCategories():
     #items = session.query(Categories).all()
     items = session.query(Categories).order_by(asc(Categories.name))
@@ -262,7 +268,7 @@ def gconnect():
 #@app.route('/gdisconnect')
 @app.route('/disconnect')
 def disconnect():
-    print(login_session['provider'] )
+    #print("test - " + login_session['provider'] )
     if login_session['provider'] == 'facebook':
         facebook_id = login_session['facebook_id']
         # The access token must me included to successfully logout
@@ -280,7 +286,7 @@ def disconnect():
         del login_session['facebook_id']
         #return "you have been logged out"
         flash('Successfully Logged out!!')
-        return redirect(url_for('showRestaurants'))
+        return redirect(url_for('showCategoriesLatestItems'))
         
     else:
         access_token = login_session.get('access_token')
@@ -299,6 +305,7 @@ def disconnect():
         print 'result is '
         print result
         if result['status'] == '200':
+            print('jatin')
             del login_session['access_token']
             del login_session['provider']
             del login_session['gplus_id']
@@ -310,11 +317,20 @@ def disconnect():
             print response
             #return response
             flash('Successfully Logged out!!')
-            return redirect(url_for('showRestaurants'))
+            return redirect(url_for('showCategoriesLatestItems'))
         else:
-            response = make_response(json.dumps('Failed to revoke token for given user.', 400))
-            response.headers['Content-Type'] = 'application/json'
-            return response
+            # force clear login_session
+            del login_session['access_token']
+            del login_session['provider']
+            del login_session['gplus_id']
+            del login_session['username']
+            del login_session['email']
+            del login_session['picture']
+            flash('Successfully Logged out!!')
+            #response = make_response(json.dumps('Failed to revoke token for given user.', 400))
+            #response.headers['Content-Type'] = 'application/json'
+            #eturn response
+            return redirect(url_for('showCategoriesLatestItems'))
 
 # Show all catalog items
 @app.route('/')
@@ -322,6 +338,7 @@ def disconnect():
 def showCategoriesLatestItems():
     categories = getCategories()
     items = getAllItems()
+    print(login_session)    
     if 'username' not in login_session:  
         #print("check1")
         return render_template('catalog.html', categories=categories, items=items, currentUserName="none",showLatest="true")        
@@ -330,7 +347,6 @@ def showCategoriesLatestItems():
         currentUserName = login_session['username']
         print(currentUserName)
         return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true")   
-                    
 
 @app.route('/catalog/<string:name>/items')   
 def showCategoriesSelectedItems(name):  
