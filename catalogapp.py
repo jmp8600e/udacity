@@ -28,7 +28,7 @@ Base.metadata.bind = engine
 
 DBSession = sessionmaker(bind=engine)
 session = DBSession()
-
+# creates user from google and FB logins 
 def createUser(login_session):
     newUser = User(name=login_session['username'], email=login_session['email'], picture=login_session['picture'])
     session.add(newUser)
@@ -36,6 +36,7 @@ def createUser(login_session):
     user = session.query(User).filter_by(email=login_session['email']).one()
     return user.id
     
+# creates user local form provided     
 def createLocalUser(email,fname,lname,password):
     fullname = fname + " " + lname 
     newUser = User(name=fullname, email=email, picture="", password=password)
@@ -44,6 +45,18 @@ def createLocalUser(email,fname,lname,password):
     user = session.query(User).filter_by(email=email).one()
     return user.name
 
+# authenticateLocalUser
+def authenticateLocalUser(email,password):
+    check = 0
+    user = session.query(User).filter_by(email=email).one()
+    if(user.password == password):
+        check = 1    
+    return check
+    
+def getLocalUser(email):
+    user = session.query(User).filter_by(email=email).one()
+    return user
+    
 # User Helper Functions
 def getCategories():
     #items = session.query(Categories).all()
@@ -102,17 +115,43 @@ def existId(res_id):
     return check
  
  # Create anti-forgery state token
-@app.route('/login')
+@app.route('/login', methods=['GET','POST'])
 def showLogin():
-    state = ''.join(random.choice(string.ascii_uppercase + string.digits)
-                    for x in xrange(32))                                       #create randome numbers of 32chars for state of the login session
-    login_session['state'] = state
-    print("jatin - " + state)
-    # return "The current session state is %s" % login_session['state']
-    return render_template('login.html', STATE=state)
+    if request.method == 'POST':
+        return localUserLogin(request.form['email'],request.form['pwd'])        
+    else:    
+        state = ''.join(random.choice(string.ascii_uppercase + string.digits)
+                        for x in xrange(32))                                       #create randome numbers of 32chars for state of the login session
+        login_session['state'] = state
+        print("jatin - " + state)
+        # return "The current session state is %s" % login_session['state']
+        return render_template('login.html', STATE=state)
+        
+@app.route('/localuserlogin', methods=['GET','POST'])
+def localUserLogin(email,password):
+    #email = request.form['email']
+    #password = request.form['pwd']
+    print(email)
+    print(password)
+    if(authenticateLocalUser(email,password)):
+        user = getLocalUser(email)
+        print(user)
+        login_session['username'] = user.name
+        login_session['picture'] = user.picture
+        login_session['email'] = user.email
+        login_session['provider'] = 'local'
+        flash("you are now logged in as %s" % login_session['username'])
+        currentUserName = login_session['username']
+        #return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true")  
+        return redirect(url_for('showCategoriesLatestItems'))         
+    else:
+        flash("incorrect username and/or password, please try again")
+        return redirect(url_for('showLogin'))
+        
 
 @app.route('/fbconnect', methods=['POST'])
 def fbconnect():
+
     if request.args.get('state') != login_session['state']:
         response = make_response(json.dumps('Invalid state parameter.'), 401)
         response.headers['Content-Type'] = 'application/json'
@@ -291,6 +330,15 @@ def disconnect():
         del login_session['email']
         del login_session['picture']
         del login_session['facebook_id']
+        #return "you have been logged out"
+        flash('Successfully Logged out!!')
+        return redirect(url_for('showCategoriesLatestItems'))
+        
+    elif login_session['provider'] == 'local':
+        del login_session['provider']
+        del login_session['username']
+        del login_session['email']
+        del login_session['picture']
         #return "you have been logged out"
         flash('Successfully Logged out!!')
         return redirect(url_for('showCategoriesLatestItems'))

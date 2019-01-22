@@ -15,7 +15,28 @@
 
 
 <body>  
+<div class = 'flash'>
+	  {% with messages = get_flashed_messages() %}
+      {% if messages %}
+          
+        <ul>
+        {% for message in messages %}
+            <li> <strong> {{ message }} </strong> </li>
+        {% endfor %}
+        </ul>
+        {% endif %}
+    {% endwith %}
 
+</div>
+<form action="#" method = "post">
+Email:
+<br><input id="email" type="text" name="email" pattern="[a-zA-Z0-9.-_]{1,}@[a-zA-Z.-]{2,}[.]{1}[a-zA-Z]{2,}" required placeholder="Enter you Email"><br>
+Password:
+<br><input type="password" name="pwd"  id="txtPassword" required placeholder="Password"><br>
+<a href="{{url_for('localUserLogin')}}">  <!-- cannot pass method type for some reason, it is not allowed -->
+    <button class="btn btn-default" style="margin-top:10px"><span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Login</button>
+</a>
+</form>
 
 <!-- GOOGLE PLUS SIGN IN BUTTON-->
 
