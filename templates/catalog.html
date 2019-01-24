@@ -29,7 +29,7 @@ body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
 		</a>
 	{% endfor %}    
         {% if currentUserName == 'none' %} 
-        <div style="position: absolute; bottom:100px;left:120px;">
+        <div style="position: absolute; bottom:100px;margin-left:auto;margin-right:auto;width: 300px">
             <a href="{{url_for('showLogin')}}">
 				<button class="btn btn-default" style="margin-top:50px"><span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Login</button>
 			</a>
@@ -37,7 +37,7 @@ body,h1,h2,h3,h4,h5 {font-family: "Raleway", sans-serif}
         </div>    
         {% else %}  
         <div style="position: absolute; bottom:100px;margin-left:auto;margin-right:auto;width: 300px">
-            <b>{{currentUserName}}</b><br>
+            <b>{{currentUserName.name}}</b><br>
             <a href="{{url_for('disconnect')}}">
                 <button class="btn btn-default" style="margin-top:10px"><span class="glyphicon glyphicon-cutlery" aria-hidden="true"></span>Logout</button>
             </a>

@@ -7,6 +7,11 @@
 					<div class="w3-text-grey" style="font-weight:bold;padding:8px 16px;">
                         {{item.description}}
 					</div>
+                    {% if currentUserName != "none" %}
+                        <div class="w3-text-grey" style="padding:8px 16px;">
+                        <a href = "#">Edit</a> | <a href = "#">Delete</a>
+                        </div>
+                    {% endif %}                    
 				<!--<div class="col-md-1"></div>-->
 			</div>
 		</a>

@@ -54,7 +54,8 @@ def authenticateLocalUser(email,password):
     return check
     
 def getLocalUser(email):
-    user = session.query(User).filter_by(email=email).one()
+    #user = session.query(User).filter_by(email=email).one() commented out as no need for password to be part of the object
+    user = session.query(User).filter_by(email=email).with_entities(User.id,User.name,User.email,User.picture).one()
     return user
     
 # User Helper Functions
@@ -220,6 +221,8 @@ def fbconnect():
     output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
+    if getUserID(login_session['email']) == None:
+        createUser(login_session)
     return output
     
 @app.route('/gconnect', methods=['POST'])
@@ -381,6 +384,7 @@ def disconnect():
             del login_session['username']
             del login_session['email']
             del login_session['picture']
+            #del login_session['state']
             flash('Successfully Logged out!!')
             #response = make_response(json.dumps('Failed to revoke token for given user.', 400))
             #response.headers['Content-Type'] = 'application/json'
@@ -399,7 +403,7 @@ def showCategoriesLatestItems():
         return render_template('catalog.html', categories=categories, items=items, currentUserName="none",showLatest="true")        
     else:    
         #print(restaurant.name + " - " + str(restaurant.user_id))
-        currentUserName = login_session['username']
+        currentUserName = getLocalUser(login_session['email'])
         print(currentUserName)
         return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true")   
 
@@ -415,11 +419,10 @@ def showCategoriesSelectedItems(name):
         return render_template('catalog.html', categories=categories, items=items, count=itemcount, name=name, currentUserName="none",showCategoryItem="true")        
     else:    
         #print(restaurant.name + " - " + str(restaurant.user_id))
-        currentUserName = login_session['username']
+        currentUserName = getLocalUser(login_session['email'])
         print(currentUserName)
         return render_template('catalog.html', categories=categories, items=items, count=itemcount,name=name, currentUserName=currentUserName,showCategoryItem="true")   
 
-#http://localhost:8000/catalog/Snowboarding/Snowboard
 
 @app.route('/catalog/<string:name>/<string:title>')     
 def showItemDescription(name,title):
@@ -431,10 +434,11 @@ def showItemDescription(name,title):
         return render_template('catalog.html', categories=categories, item=item, currentUserName="none",showDescription="true")        
     else:    
         #print(restaurant.name + " - " + str(restaurant.user_id))
-        currentUserName = login_session['username']
+        currentUserName = getLocalUser(login_session['email'])
         print(currentUserName)
         return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,showDescription="true")  
-        
+
+# for creating local users        
 @app.route('/userinfo',methods=['GET', 'POST'])
 def getUserInfo():
     categories = getCategories()
@@ -452,16 +456,16 @@ def getUserInfo():
                 flash('Email  %s already exist, Please select different Email address' % (request.form['email']))
                 return render_template('catalog.html', categories=categories, items=items, currentUserName="none",newUser='true')
         else:
-            currentUserName = login_session['username']
+            currentUserName = getLocalUser(login_session['email'])
             flash('User already logged in as   %s' % (currentUserName))
             return render_template(url_for('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true"))
     else:
         if 'username' not in login_session: 
             return render_template('catalog.html', categories=categories, items=items, currentUserName="none",newUser='true')        
         else:    
-            currentUserName = login_session['username']
+            currentUserName = getLocalUser(login_session['email']) # currentUserName = login_session['username']
             flash('User already logged in as   %s' % (currentUserName)) 
-            return render_template(url_for('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true"))
+            return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true")
 
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
