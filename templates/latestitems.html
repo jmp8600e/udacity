@@ -1,7 +1,7 @@
 <div class="w3-main" style="margin-left:300px">
     <div style="margin-left:50px;margin-top:210px" >
     {% if currentUserName != "none" %}
-        <a href = "#">
+        <a href = "{{url_for('createNewItem')}}">
             <div class="w3-text-grey" style="font-weight:bold;padding:8px 16px;">
                 Add New Item
             </div>

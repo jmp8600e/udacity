@@ -1,0 +1,21 @@
+<div class="w3-main" style="margin-left:300px">
+    <div style="margin-left:50px;margin-top:210px" >
+      <h4 class="w3-text-grey"><b>Add New Item</b></h4>
+<form action="#" method = "post" autocomplete="on">
+  Title:
+  <br><input type="text" name="title" required placeholder="Enter Title"><br>
+  Description:
+  <br><input type="text" name="desc" required placeholder="Enter Description"><br>
+  Category:
+  <!-- <br><input id="email" type="text" name="category" required placeholder="Enter Category Name"><br> -->
+  <br><input list="category" name="name">
+  <datalist id="category">
+    {% for item in categories %}
+        <option value= "{{item.name}}">
+    {% endfor %}
+  </datalist><br>
+<br>
+<input type="submit" value="Submit">
+</form>
+    </div>    
+</div>

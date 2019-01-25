@@ -1,5 +1,5 @@
 from flask import Flask, render_template, request, redirect, jsonify, url_for, flash
-from sqlalchemy import create_engine, asc
+from sqlalchemy import create_engine, asc, exc
 from sqlalchemy.orm import sessionmaker
 from database_setup import Base, Categories, Items, User 
 from flask import session as login_session
@@ -83,7 +83,7 @@ def existCategory(category_name):
     check = 0
     items = getCategories()
     for item in items:
-        if(item.category_name == category_name):
+        if(item.name == category_name):
             check = 1
     return check
 # get items given category id
@@ -106,7 +106,6 @@ def getUserID(email):
     except:
         return None
 
-
 def existId(res_id):
     check = 0
     items = getCategories()
@@ -114,7 +113,39 @@ def existId(res_id):
         if(item.id == res_id):
             check = 1
     return check
- 
+
+def itemExistCheck(title,name):
+    check = 0
+    try:
+        session.query(Items).filter(Items.category_id == Categories.id).filter(Items.title == title).filter(Categories.name == name).one()
+        check = 1
+    except exc.SQLAlchemyError:
+        pass
+    return check
+    
+def createItem(title,description,user_id,category_name):
+    check = 0
+    #check item and category combination if exist
+    if not itemExistCheck(title,category_name):
+        #creating category
+        if not existCategory(category_name):
+            category = Categories(name=category_name,user_id=user_id)
+            session.add(category)
+            session.commit()
+            category_id = category.id
+        else:
+            category_id = getCategoryID(category_name)
+        
+        #creating item
+        item = Items(title=title,description=description,category_id=category_id,user_id=user_id)
+        session.add(item)
+        session.commit()
+  
+        check = 1
+
+    return check
+    
+        
  # Create anti-forgery state token
 @app.route('/login', methods=['GET','POST'])
 def showLogin():
@@ -467,6 +498,35 @@ def getUserInfo():
             flash('User already logged in as   %s' % (currentUserName)) 
             return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,showLatest="true")
 
+# for creating new item   
+       
+@app.route('/newitem',methods=['GET', 'POST'])
+def createNewItem():
+    user_id = getUserID(login_session['email'])
+    print("createNewItem - ",user_id)
+    #print(user.email)
+    #print(user.picture)
+    #print(user.name)
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        #print(login_session)
+        newItem = createItem(request.form['title'],request.form['desc'],user_id,request.form['name'])
+        if(newItem):
+            flash('New Item %s Successfully Created' % request.form['title'])
+            return redirect(url_for('showCategoriesLatestItems'))
+        else: 
+            categories = getCategories()
+            items = getAllItems()
+            currentUserName = getLocalUser(login_session['email'])
+            flash('New Item %s already exist (may be create by someone else) ' % request.form['title'])
+            return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,newItem="true")
+    else:
+        categories = getCategories()
+        items = getAllItems()
+        currentUserName = getLocalUser(login_session['email'])
+        return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,newItem="true")
+         
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
 def newCategory():
