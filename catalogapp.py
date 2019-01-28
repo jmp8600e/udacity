@@ -123,6 +123,15 @@ def itemExistCheck(title,name):
         pass
     return check
     
+def itemOwnerCheck(title,name,user_id):
+    check = 0
+    try:
+        session.query(Items).filter(Items.category_id == Categories.id).filter(Items.title == title).filter(Categories.name == name).filter(Items.user_id == user_id).one()
+        check = 1
+    except exc.SQLAlchemyError:
+        pass
+    return check
+    
 def createItem(title,description,user_id,category_name):
     check = 0
     #check item and category combination if exist
@@ -137,14 +146,42 @@ def createItem(title,description,user_id,category_name):
             category_id = getCategoryID(category_name)
         
         #creating item
-        item = Items(title=title,description=description,category_id=category_id,user_id=user_id)
-        session.add(item)
-        session.commit()
-  
-        check = 1
-
+        try:
+            item = Items(title=title,description=description,category_id=category_id,user_id=user_id)
+            session.add(item)
+            session.commit()  
+            check = 1
+        except exc.SQLAlchemyError:
+            pass            
     return check
-    
+
+def editItem(title,description,user_id,category_name,current_category_name):
+    check = 0
+    # YOU MUST GET THE ITEM FIRST IN ORDER TO EDIT OTHERWISE IT WILL NOT WORK
+    editItem = getItemFromCategoryNameItemTitle(current_category_name,title)
+    #check if category  exist
+    if not existCategory(category_name):
+        category = Categories(name=category_name,user_id=user_id)
+        session.add(category)
+        session.commit()
+        category_id = category.id
+    else:
+        category_id = getCategoryID(category_name)        
+    #updating item
+    try:
+        # AT THE TIME OF EXIT LEAVE THE FOREIGH KEY AND PRIMARY KEY ALONE AND ONLY FOCUS ON THE ACTUAL DATA THAT YOU WANT TO EXID OTHER WISE YOU WILL GET sqlite3.IntegrityError WHEN YOU TRY TO EDIT WITH THOSE KEYS
+        # ALSO DO NOT USE THE ITEM CLASS THAT WILL CREATE NEW ITEM NOT UPDATE EXISTING
+        #item = Items(id=item.id,title=title,description=description,category_id=category_id,user_id=user_id) #1st failed attempt
+        #item = Items(title=title,description=description,category_id=category_id) #2nd failed attempt
+        editItem.title = title
+        editItem.description = description
+        editItem.category_id = category_id
+        session.add(editItem)
+        session.commit()
+        check = 1
+    except exc.SQLAlchemyError:
+        pass    
+    return check    
         
  # Create anti-forgery state token
 @app.route('/login', methods=['GET','POST'])
@@ -462,12 +499,12 @@ def showItemDescription(name,title):
     item = getItemFromCategoryNameItemTitle(name,title)
     if 'username' not in login_session:  
         #print("check1")
-        return render_template('catalog.html', categories=categories, item=item, currentUserName="none",showDescription="true")        
+        return render_template('catalog.html', categories=categories, item=item, currentUserName="none",name=name,showDescription="true")        
     else:    
         #print(restaurant.name + " - " + str(restaurant.user_id))
         currentUserName = getLocalUser(login_session['email'])
         print(currentUserName)
-        return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,showDescription="true")  
+        return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,name=name,showDescription="true")  
 
 # for creating local users        
 @app.route('/userinfo',methods=['GET', 'POST'])
@@ -502,14 +539,14 @@ def getUserInfo():
        
 @app.route('/newitem',methods=['GET', 'POST'])
 def createNewItem():
-    user_id = getUserID(login_session['email'])
-    print("createNewItem - ",user_id)
+    #print("createNewItem - ",user_id)
     #print(user.email)
     #print(user.picture)
     #print(user.name)
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
+        user_id = getUserID(login_session['email'])
         #print(login_session)
         newItem = createItem(request.form['title'],request.form['desc'],user_id,request.form['name'])
         if(newItem):
@@ -522,10 +559,54 @@ def createNewItem():
             flash('New Item %s already exist (may be create by someone else) ' % request.form['title'])
             return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,newItem="true")
     else:
+        user_id = getUserID(login_session['email'])
         categories = getCategories()
         items = getAllItems()
         currentUserName = getLocalUser(login_session['email'])
         return render_template('catalog.html', categories=categories, items=items, currentUserName=currentUserName,newItem="true")
+        
+#http://localhost:8000/catalog/Snowboard/edit
+@app.route('/catalog/<string:name>/<string:title>/edit',methods=['GET', 'POST'])
+def editExistingItem(name,title):
+    #print(user.email)
+    #print(user.picture)
+    #print(user.name)
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        user_id = getUserID(login_session['email'])
+        print("editItem - ",user_id)
+        #print(login_session)
+        if(itemExistCheck(title,name)):
+           # user_id = getUserID(login_session['email'])
+            if(itemOwnerCheck(title,name,user_id)):
+                updatedItem = editItem(request.form['title'],request.form['desc'],user_id,request.form['name'],name)
+                if(updatedItem):
+                    flash('Item Updated Successfully!!')
+                    return redirect(url_for('showCategoriesLatestItems'))
+                else:
+                    flash('Unable to edit the item %s' % request.form['title'])
+                    return redirect(url_for('showCategoriesLatestItems'))       
+            else:
+                flash('Item %s is not owned by your id so you cannot edit this item' % request.form['title'])
+                return redirect(url_for('showCategoriesLatestItems'))      
+        else:
+            flash('Item %s does not exist' % request.form['title'])
+            return redirect(url_for('showCategoriesLatestItems'))
+    else:
+        user_id = getUserID(login_session['email'])
+        print("editItem - ",user_id)
+        if(itemExistCheck(title,name)):
+            categories = getCategories()
+            item = getItemFromCategoryNameItemTitle(name,title)
+            currentUserName = getLocalUser(login_session['email'])
+            return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,name=name,title=title,editItem="true")
+        else:
+            flash('Item %s does not exist that you want to edit' % request.form['title'])
+            return redirect(url_for('showCategoriesLatestItems'))
+
+
+#http://localhost:8000/catalog/Snowboard/delete
          
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
