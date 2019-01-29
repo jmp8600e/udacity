@@ -71,12 +71,16 @@ def getCategoryID(name):
     
 # get description of the item given name of catagory and title of the item    
 def getItemFromCategoryNameItemTitle(name,title):
-    item = (session.query(Items)
-        .filter(Items.category_id == Categories.id)
-        .filter(Items.title == title)
-        .filter(Categories.name == name)
-        .one())
-    return item
+    check = 0
+    try:
+        item = (session.query(Items)
+            .filter(Items.category_id == Categories.id)
+            .filter(Items.title == title)
+            .filter(Categories.name == name)
+            .one())
+        return item
+    except exc.SQLAlchemyError:
+           return check
     
 #check if category existing given name
 def existCategory(category_name):
@@ -182,7 +186,20 @@ def editItem(title,description,user_id,category_name,current_category_name):
     except exc.SQLAlchemyError:
         pass    
     return check    
-        
+  
+def deleteItem(title,category_name):
+    check = 0
+    # YOU MUST GET THE ITEM FIRST IN ORDER TO DELETE OTHERWISE IT WILL NOT WORK
+    deleteItem = getItemFromCategoryNameItemTitle(category_name,title)
+    #updating item
+    try:
+        session.delete(deleteItem)
+        session.commit()
+        check = 1
+    except exc.SQLAlchemyError:
+        pass    
+    return check  
+   
  # Create anti-forgery state token
 @app.route('/login', methods=['GET','POST'])
 def showLogin():
@@ -497,14 +514,20 @@ def showItemDescription(name,title):
     # now we have to seclect the description where which matches title from item and name from catagories
     categories = getCategories()
     item = getItemFromCategoryNameItemTitle(name,title)
-    if 'username' not in login_session:  
-        #print("check1")
-        return render_template('catalog.html', categories=categories, item=item, currentUserName="none",name=name,showDescription="true")        
-    else:    
-        #print(restaurant.name + " - " + str(restaurant.user_id))
-        currentUserName = getLocalUser(login_session['email'])
-        print(currentUserName)
-        return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,name=name,showDescription="true")  
+    if(item):
+        if 'username' not in login_session:  
+            print("check1")
+            return render_template('catalog.html', categories=categories, item=item, currentUserName="none",name=name,showDescription="true")        
+        else:    
+            #print(restaurant.name + " - " + str(restaurant.user_id))
+            currentUserName = getLocalUser(login_session['email'])
+            print("showItemDescription - ",currentUserName)
+            return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,name=name,showDescription="true")  
+    else:
+        print("showItemDescription")
+        flash('Item does not exist')
+        return redirect(url_for('showCategoriesLatestItems'))
+
 
 # for creating local users        
 @app.route('/userinfo',methods=['GET', 'POST'])
@@ -568,9 +591,6 @@ def createNewItem():
 #http://localhost:8000/catalog/Snowboard/edit
 @app.route('/catalog/<string:name>/<string:title>/edit',methods=['GET', 'POST'])
 def editExistingItem(name,title):
-    #print(user.email)
-    #print(user.picture)
-    #print(user.name)
     if 'username' not in login_session:
         return redirect('/login')
     if request.method == 'POST':
@@ -605,9 +625,43 @@ def editExistingItem(name,title):
             flash('Item %s does not exist that you want to edit' % request.form['title'])
             return redirect(url_for('showCategoriesLatestItems'))
 
-
-#http://localhost:8000/catalog/Snowboard/delete
-         
+#http://localhost:8000/catalog/Snowboard/delete            
+           
+@app.route('/catalog/<string:name>/<string:title>/delete',methods=['GET', 'POST'])
+def deleteExistingItem(name,title):
+    if 'username' not in login_session:
+        return redirect('/login')
+    if request.method == 'POST':
+        user_id = getUserID(login_session['email'])
+        print("deleteItem - ",user_id)
+        #print(login_session)
+        if(itemExistCheck(title,name)):
+           # user_id = getUserID(login_session['email'])
+            if(itemOwnerCheck(title,name,user_id)):
+                updatedItem = deleteItem(title,name)
+                if(updatedItem):
+                    flash('Item delete Successfully!!')
+                    return redirect(url_for('showCategoriesLatestItems'))
+                else:
+                    flash('Unable to delete the item %s' % title)
+                    return redirect(url_for('showCategoriesLatestItems'))       
+            else:
+                flash('Item %s is not owned by your id so you cannot delete this item' % title)
+                return redirect(url_for('showCategoriesLatestItems'))      
+        else:
+            flash('Item %s does not exist' % title)
+            return redirect(url_for('showCategoriesLatestItems'))
+    else:
+        user_id = getUserID(login_session['email'])
+        print("deleteItem - ",user_id)
+        if(itemExistCheck(title,name)):
+            categories = getCategories()
+            item = getItemFromCategoryNameItemTitle(name,title)
+            currentUserName = getLocalUser(login_session['email'])
+            return render_template('catalog.html', categories=categories, item=item, currentUserName=currentUserName,name=name,title=title,deleteItem="true")
+        else:
+            flash('Item %s does not exist that you want to delete' % title)
+            return redirect(url_for('showCategoriesLatestItems'))
 '''                    
 @app.route('/restaurant/new/', methods=['GET', 'POST'])
 def newCategory():
