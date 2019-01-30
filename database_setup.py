@@ -40,7 +40,7 @@ class Items(Base):
     id = Column(Integer, primary_key=True)
     description = Column(String(250))
     category_id = Column(Integer, ForeignKey('categories.id'))
-    categories = relationship(Categories)
+    categories = relationship(Categories, backref='items')
     user_id = Column(Integer, ForeignKey('user.id'))
     user = relationship(User)
 
@@ -51,6 +51,7 @@ class Items(Base):
             'title': self.title,
             'description': self.description,
             'id': self.id,
+            'category_id': self.category_id,
         }
 
 
