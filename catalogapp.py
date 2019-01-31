@@ -659,6 +659,7 @@ def deleteExistingItem(name,title):
 
             
 #JSON Endpoint
+@app.route('/catalog.json')
 @app.route('/catalog/JSON')
 def catalogJSON():
     # this one got some help from stackoverflow.com answers
