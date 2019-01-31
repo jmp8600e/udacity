@@ -1,6 +1,6 @@
 # Project: Catalog Project
 
-This project is wev based application created on using Flask Framework, Python as a backend programming language. This also uses a SQLAlchemy as ORM to interface with SQLLite3 database engine.  
+This project is web based application created on using Flask Framework, Python as a backend programming language. This also uses a SQLAlchemy as ORM to interface with SQLLite3 database engine.  
 
 The project has following requirements. 
   - Shows users all Categories and Latest Items added
