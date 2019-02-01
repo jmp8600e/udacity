@@ -226,17 +226,6 @@ def editItem(
         category_id = getCategoryID(category_name)
     # updating item
     try:
-
-        # AT THE TIME OF EXIT LEAVE THE FOREIGH KEY AND PRIMARY KEY ALONE AND
-        #ONLY FOCUS ON THE ACTUAL DATA THAT YOU WANT TO EXID OTHER WISE YOU WILL
-        #GET sqlite3.IntegrityError WHEN YOU TRY TO EDIT WITH THOSE KEYS
-        # ALSO DO NOT USE THE ITEM CLASS THAT WILL CREATE NEW ITEM NOT UPDATE
-        # item = Items(id=item.id,title=title,description=description,\
-        # category_id=category_id,user_id=user_id) #1st failed attempt
-        # item =
-        # Items(title=title,description=description,category_id=category_id)
-        #2nd failed attempt
-
         editItem.title = title
         editItem.description = description
         editItem.category_id = category_id
@@ -317,23 +306,26 @@ def fbconnect():
         'web']['app_id']
     app_secret = json.loads(
         open('fb_client_secrets.json', 'r').read())['web']['app_secret']
-    url = 'https://graph.facebook.com/oauth/access_token?grant_type=fb_exchange_token&client_id=%s&client_secret=%s&fb_exchange_token=%s' % (
-        app_id, app_secret, access_token)
+    url = 'https://graph.facebook.com/oauth/access_token?'\
+        'grant_type=fb_exchange_token&client_id=%s&client_secret'\
+        '=%s&fb_exchange_token=%s' % \
+          (app_id, app_secret, access_token)
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
 
     # Use token to get user info from API
     userinfo_url = "https://graph.facebook.com/v2.8/me"
     '''
-        Due to the formatting for the result from the server token exchange we have to
-        split the token first on commas and select the first index which gives us the key : value
-        for the server access token then we split it on colons to pull out the actual token value
-        and replace the remaining quotes with nothing so that it can be used directly in the graph
-        api calls
+Due to the formatting for the result from the server token exchange we have to
+split the token first on commas and select the first index which gives us the
+key : value for the server access token then we split it on colons to pull out
+the actual token valueand replace the remaining quotes with nothing so that it
+can be used directly in the graphapi calls
     '''
     token = result.split(',')[0].split(':')[1].replace('"', '')
 
-    url = 'https://graph.facebook.com/v2.8/me?access_token=%s&fields=name,id,email' % token
+    url = 'https://graph.facebook.com/v2.8/me?access_token=%'\
+        's\&fields=name,id,email' % token
 
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
@@ -349,7 +341,8 @@ def fbconnect():
     login_session['access_token'] = token
 
     # Get user picture
-    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s&redirect=0&height=200&width=200' % token
+    url = 'https://graph.facebook.com/v2.8/me/picture?access_token=%s'\
+        '&redirect=0&height=200&width=200' % token
     h = httplib2.Http()
     result = h.request(url, 'GET')[1]
     data = json.loads(result)
@@ -369,7 +362,9 @@ def fbconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius:'\
+              '150px;-webkit-border-radius: 150px;'\
+              '-moz-border-radius: 150px;"> '
 
     flash("Now logged in as %s" % login_session['username'])
     if getUserID(login_session['email']) is None:
@@ -462,7 +457,8 @@ def gconnect():
     output += '!</h1>'
     output += '<img src="'
     output += login_session['picture']
-    output += ' " style = "width: 300px; height: 300px;border-radius: 150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
+    output += ' " style = "width: 300px; height: 300px;border-radius:\
+            150px;-webkit-border-radius: 150px;-moz-border-radius: 150px;"> '
     flash("you are now logged in as %s" % login_session['username'])
     # print "done!"
     if getUserID(login_session['email']) is None:
@@ -516,7 +512,8 @@ def disconnect():
         # print 'In disconnect access token is %s', access_token
         # print 'User name is: '
         # print login_session['username']
-        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' % login_session['access_token']
+        url = 'https://accounts.google.com/o/oauth2/revoke?token=%s' %\
+            login_session['access_token']
         h = httplib2.Http()
         result = h.request(url, 'GET')[0]
         if result['status'] == '200':
@@ -648,7 +645,8 @@ def getUserInfo():
                     lname=request.form['lname'],
                     password=request.form['pwd'])
                 flash(
-                    'New User %s Successfully Created, click on Login to login as new user' %
+                    'New User %s Successfully Created, click on Login\
+                    to login as new user' %
                     (newUser))
                 # return redirect(url_for('showCategoriesLatestItems'))   #
                 # doing double work so not using redirect...
@@ -660,7 +658,8 @@ def getUserInfo():
                     showLatest="true")
             else:
                 flash(
-                    'Email  %s already exist, Please select different Email address' %
+                    'Email  %s already exist, Please select different\
+                    Email address' %
                     (request.form['email']))
                 return render_template(
                     'catalog.html',
@@ -770,7 +769,8 @@ def editExistingItem(name, title):
                     return redirect(url_for('showCategoriesLatestItems'))
             else:
                 flash(
-                    'Item %s is not owned by your id so you cannot edit this item' %
+                    'Item %s is not owned by your id so you cannot\
+                    edit this item' %
                     request.form['title'])
                 return redirect(url_for('showCategoriesLatestItems'))
         else:
@@ -823,7 +823,8 @@ def deleteExistingItem(name, title):
                     return redirect(url_for('showCategoriesLatestItems'))
             else:
                 flash(
-                    'Item %s is not owned by your id so you cannot delete this item' %
+                    'Item %s is not owned by your id so you cannot delete\
+                        this item' %
                     title)
                 return redirect(url_for('showCategoriesLatestItems'))
         else:
