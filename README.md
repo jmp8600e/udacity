@@ -15,11 +15,13 @@ The project has following requirements.
   - JSON endpoint which shows data in JSON format
 
 ### Platform Prerequisite
-
-  - Python 2.7.12 and later
-  - SQLAlchemy ORM
-  - Flask Framework
-  
+    
+    - Python 2.7.12 or later
+    - Run below command to install other requir modules
+    
+    ```sh
+    pip  install  -r  requirements.txt
+    
 ### Files Description
     
   - catalogapp.py: main python file whcih user will execute to start the application
