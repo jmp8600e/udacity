@@ -127,21 +127,26 @@ CREATE TABLE "items" (
 ```    
 
 ### Third-Party Resources
+
 - Udacity Questions and Anwers
+
     https://knowledge.udacity.com/questions/28071
     https://knowledge.udacity.com/questions/21110
     https://knowledge.udacity.com/questions/28049
 
 - Postgresql resources
+
     https://www.postgresql.org/docs/9.0/sql-grant.html
     https://www.postgresql.org/docs/9.1/sql-altertable.html
     https://www.postgresql.org/docs/9.1/sql-createtable.html
 
 - SQLAlchemy resources
+
     https://docs.sqlalchemy.org/en/latest/errors.html#error-dbapi
     https://docs.sqlalchemy.org/en/latest/core/engines.html
 
 - Other resources
+
     https://chartio.com/resources/tutorials/how-to-list-databases-and-tables-in-postgresql-using-psql/
     https://www.digitalocean.com/community/tutorials/how-to-use-roles-and-manage-grant-permissions-in-postgresql-on-a-vps--2
     https://www.digitalocean.com/community/tutorials/how-to-secure-postgresql-on-an-ubuntu-vps
