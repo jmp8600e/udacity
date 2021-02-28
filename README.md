@@ -1,6 +1,6 @@
 # Project: Linux Server Configuration
 
-This project is web based application created on using Flask Framework, Python as a backend programming language. This also uses a SQLAlchemy as ORM to interface with Postgresql database engine.   This is running on Amazong Lightsail Platform. 
+This project is web based application created on using Flask Framework, Python as a backend programming language. This also uses a SQLAlchemy as ORM to interface with Postgresql database engine.   This is running on Amazon Lightsail Platform. 
 
 ### Grader Access info    
     - Grader can access the server on IP 18.234.232.231 on port 2200.
